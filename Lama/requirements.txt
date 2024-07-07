@@ -1,0 +1,10 @@
+python-dotenv
+pypdf
+langchain_community
+PyPDF2
+langchain-objectbox
+langchain-groq
+python-dotenv
+streamlit
+langchain_openai
+faiss-cpu
