@@ -95,11 +95,12 @@ llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
 
 prompt = ChatPromptTemplate.from_template("""
 Answer the following question based only on the provided context. 
-Think step by step before providing a detailed answer. 
-I will tip you $1000 if the user finds the answer helpful. 
+You are a legal expert and based on the query, 
+go through the context 
 <context>
 {context}
 </context>
+and respond to the query based by providing applicable laws , legal help and similar case studies
 Question: {input}
 """)
 
