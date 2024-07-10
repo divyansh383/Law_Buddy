@@ -10,12 +10,13 @@ from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 import shutil
-# import pytesseract
-# from pdf2image import convert_from_path
-# from PIL import Image
-# import io
+from langchain.retrievers.document_compressors import DocumentCompressorPipeline
+from langchain_community.document_transformers import EmbeddingsRedundantFilter
+from langchain_text_splitters import CharacterTextSplitter
+from langchain.retrievers.document_compressors import EmbeddingsFilter
+from langchain.retrievers import ContextualCompressionRetriever
 
-# Load environment variables
+
 load_dotenv()
 
 os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
@@ -27,7 +28,6 @@ embeddings = AzureOpenAIEmbeddings(
     azure_deployment="lala",
     openai_api_version="2024-03-01-preview",
 )
-
 
 def add_vector_database(directory_path):
     loader = PyPDFDirectoryLoader(directory_path)
@@ -78,9 +78,19 @@ def delete_vector_database():
 
 def answer(input):
     try:
+        splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0, separator=". ")
+        redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings)
+        relevant_filter = EmbeddingsFilter(embeddings=embeddings, similarity_threshold=0.76)
+        pipeline_compressor = DocumentCompressorPipeline(
+            transformers=[splitter, redundant_filter, relevant_filter]
+        )
         database = FAISS.load_local('first__vector', embeddings, allow_dangerous_deserialization=True)
         retriever = database.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        compression_retriever = ContextualCompressionRetriever(
+            base_compressor=pipeline_compressor, base_retriever=retriever
+        )
+
+        retrieval_chain = create_retrieval_chain(compression_retriever, document_chain)
         response = retrieval_chain.invoke({"input": input})
         return response['answer']
     except Exception as e:
