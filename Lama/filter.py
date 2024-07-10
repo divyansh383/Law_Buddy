@@ -10,12 +10,13 @@ from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 import shutil
-# import pytesseract
-# from pdf2image import convert_from_path
-# from PIL import Image
-# import io
+from langchain.retrievers.document_compressors import DocumentCompressorPipeline
+from langchain_community.document_transformers import EmbeddingsRedundantFilter
+from langchain_text_splitters import CharacterTextSplitter
+from langchain.retrievers.document_compressors import EmbeddingsFilter
+from langchain.retrievers import ContextualCompressionRetriever
 
-# Load environment variables
+
 load_dotenv()
 
 os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
@@ -27,7 +28,6 @@ embeddings = AzureOpenAIEmbeddings(
     azure_deployment="lala",
     openai_api_version="2024-03-01-preview",
 )
-
 
 def add_vector_database(directory_path):
     loader = PyPDFDirectoryLoader(directory_path)
@@ -54,17 +54,9 @@ You are an experienced AI Lawyer, specializing in providing legal guidance on va
 2) Think step-by-step before providing a detailed answer.
 3) Ensure the answer is thorough and helpful.
 
-<<<<<<< HEAD
-prompt = ChatPromptTemplate.from_template("""
-Answer the following question based only on the provided context. 
-You are a legal expert and based on the query, 
-go through the context 
-=======
->>>>>>> 35f217257d70f5efac90d42976990f1946c0704b
 <context>
 {context}
 </context>
-and respond to the query based by providing applicable laws , legal help and similar case studies
 Question: {input}
 """
 )
@@ -86,9 +78,19 @@ def delete_vector_database():
 
 def answer(input):
     try:
+        splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0, separator=". ")
+        redundant_filter = EmbeddingsRedundantFilter(embeddings=embeddings)
+        relevant_filter = EmbeddingsFilter(embeddings=embeddings, similarity_threshold=0.76)
+        pipeline_compressor = DocumentCompressorPipeline(
+            transformers=[splitter, redundant_filter, relevant_filter]
+        )
         database = FAISS.load_local('first__vector', embeddings, allow_dangerous_deserialization=True)
         retriever = database.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        compression_retriever = ContextualCompressionRetriever(
+            base_compressor=pipeline_compressor, base_retriever=retriever
+        )
+
+        retrieval_chain = create_retrieval_chain(compression_retriever, document_chain)
         response = retrieval_chain.invoke({"input": input})
         return response['answer']
     except Exception as e:
