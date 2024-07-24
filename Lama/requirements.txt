@@ -3,10 +3,14 @@ python-dotenv
 pypdf
 langchain_community
 PyPDF2
-langchain-objectbox
 langchain-groq
 python-dotenv
 streamlit
 langchain_openai
 faiss-cpu
-langchain
+langchainhub
+langchain_chroma
+bs4
+lark
+lark-parser
+streamlit-authenticator
