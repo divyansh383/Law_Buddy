@@ -18,7 +18,7 @@ def admin_panel():
             if submit_button:
                 add_document(document_content, law_name, content_description, category)
                 st.success("Data added successfully!")
-                st.experimental_rerun()
+                st.rerun()
 
 def add_document(page_content, law_name, content_description, category):
     new_doc = Document(

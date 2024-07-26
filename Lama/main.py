@@ -146,7 +146,7 @@ def main():
         admin_panel()
         if st.sidebar.button("Back"):
             st.session_state.page = "main"
-            st.experimental_rerun()
+            st.rerun()
     elif st.session_state.page == "login":
         login()
     else:
@@ -156,7 +156,7 @@ def main():
                 st.session_state.page = "login"
             else:
                 st.session_state.page = "admin"
-            st.experimental_rerun()
+            st.rerun()
 
 def main_page():
     st.title("Legal Buddy")
@@ -198,7 +198,7 @@ def login():
     if authentication_status:
         st.session_state.authentication_status = True
         st.session_state.page = "admin"
-        st.experimental_rerun()
+        st.rerun()
 
 
 if __name__ == "__main__":
