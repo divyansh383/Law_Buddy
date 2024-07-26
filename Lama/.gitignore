@@ -1,3 +1,6 @@
 myenv/
 .env
 auth.py
+data
+faiss_index.bin
+first__vector
