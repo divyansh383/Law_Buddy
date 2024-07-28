@@ -19,9 +19,13 @@ import pickle
 import pathlib as Path
 import streamlit_authenticator as stauth
 
-os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
-os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
-groq_api_key = os.getenv('GROQ_API_KEY')
+# os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
+# os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
+# groq_api_key = os.getenv('GROQ_API_KEY')
+
+os.environ["AZURE_OPENAI_API_KEY"] = st.secrets["AZURE_OPENAI_API_KEY"]
+os.environ["AZURE_OPENAI_ENDPOINT"] = st.secrets["AZURE_OPENAI_ENDPOINT"]
+groq_api_key = st.secrets['GROQ_API_KEY']
 
 # Initialization function to be called once
 def init():
