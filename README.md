@@ -8,4 +8,4 @@ myenv\Scripts\activate
 
 pip install -r requirements.txt
 
-Streamlit run main01.py
+Streamlit run main.py
