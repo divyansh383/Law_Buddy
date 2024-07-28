@@ -10,7 +10,7 @@ from langchain_chroma import Chroma
 from langchain.chains.query_constructor.base import AttributeInfo
 from langchain.retrievers.self_query.base import SelfQueryRetriever
 
-from langchain_core.pydantic_v1 import BaseModel,Field
+from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.output_parsers import JsonOutputParser
 from prompts import *
 
@@ -21,46 +21,52 @@ import streamlit_authenticator as stauth
 
 os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
 os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
-groq_api_key=os.getenv('GROQ_API_KEY')
+groq_api_key = os.getenv('GROQ_API_KEY')
 
-documents=load_documents()
-# from documents import sexual_offences_docs
-# documents=sexual_offences_docs
+# Initialization function to be called once
+def init():
+    st.session_state.documents = load_documents()
+    
+    st.session_state.embeddings = AzureOpenAIEmbeddings(
+        azure_deployment="lala",
+        openai_api_version="2024-03-01-preview",
+    )
 
-embeddings = AzureOpenAIEmbeddings(
-    azure_deployment="lala",
-    openai_api_version="2024-03-01-preview",
-)
+    st.session_state.metadata_field_info = [
+        AttributeInfo(
+            name="law",
+            description="the Indian Penal Code section that is being discussed in the document",
+            type="string",
+        ),
+        AttributeInfo(
+            name="content",
+            description="The type of content in the document- [law definition , exception, explanation , state amendments , key points]",
+            type="integer",
+        ),
+        AttributeInfo(
+            name="category",
+            description="The category of the described crime or law",
+            type="string",
+        ),
+    ]
 
-metadata_field_info = [
-    AttributeInfo(
-        name="law",
-        description="the Indian Penal Code section that is being discussed in the document",
-        type="string",
-    ),
-    AttributeInfo(
-        name="content",
-        description="The type of content in the document- [law definition , exception, explanation , state amendments , key points]",
-        type="integer",
-    ),
-    AttributeInfo(
-        name="category",
-        description="The category of the described crime or law",
-        type="string",
-    ),
-]
+    st.session_state.document_content_description = "List of Indian laws applicable on sexual offences , theft and extortion"
+    
+    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma2-9b-it", temperature=0)
+    
+    st.session_state.vectorstore = Chroma.from_documents(st.session_state.documents, st.session_state.embeddings)
 
-document_content_description="List of Indian laws applicable on sexual offences , theft and extortion"
-llm=ChatGroq(groq_api_key=groq_api_key,model_name="gemma2-9b-it",temperature=0)
-vectorstore=Chroma.from_documents(documents,embeddings)
+    st.session_state.sqretriever = SelfQueryRetriever.from_llm(
+        st.session_state.llm,
+        st.session_state.vectorstore,
+        st.session_state.document_content_description,
+        st.session_state.metadata_field_info,
+        enable_limit=False,
+    )
+    st.session_state.initialized = True
 
-sqretriever=SelfQueryRetriever.from_llm(
-    llm,
-    vectorstore,
-    document_content_description,
-    metadata_field_info,
-    enable_limit=False,
-)
+if 'initialized' not in st.session_state:
+    init()
 
 classifier_prompt = f"""
 <|TASK>|
@@ -91,47 +97,45 @@ Your task is to classify user input question in one of the following as-:
 """
 
 class Classifier(BaseModel):
-    type:str=Field(description="Type of Question Whether case/law_query/normal_query")
+    type: str = Field(description="Type of Question Whether case/law_query/normal_query")
 
 def question_classifier(question):
-    parser = JsonOutputParser(pydantic_object= Classifier) #json formatter
+    parser = JsonOutputParser(pydantic_object=Classifier) #json formatter
 
     chat_prompt = ChatPromptTemplate.from_messages([
         ("system", classifier_prompt),
         ("human", f"""Classify the following question: {question}.|<Don't give any output other than the json>|""")
     ])
 
-    chain = chat_prompt | llm | parser
+    chain = chat_prompt | st.session_state.llm | parser
     response = chain.invoke({"question": question})
     return response['category']
 
 
 def answer(input):
     try:
-        llm=ChatGroq(groq_api_key=groq_api_key,
-             model_name="llama-3.1-8b-instant",temperature=0)
+        llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama-3.1-8b-instant", temperature=0)
 
         response = question_classifier(input)
         print(response)
         if(response == 'case'):
-            document_chain=create_stuff_documents_chain(llm,case_prompt)
+            document_chain = create_stuff_documents_chain(llm, case_prompt)
         elif(response == 'law_query'):
-            document_chain=create_stuff_documents_chain(llm,law_query_prompt)
-        else :
+            document_chain = create_stuff_documents_chain(llm, law_query_prompt)
+        else:
             chat_prompt = ChatPromptTemplate.from_messages([
-            ("system", normal_query_prompt),
-            ("human", f"""Answer the following : {input}.|<If question is not law related ask, user to ask law related questions>|""")
-        ])
-            chain = chat_prompt | llm 
+                ("system", normal_query_prompt),
+                ("human", f"""Answer the following : {input}.|<If question is not law related ask, user to ask law related questions>|""")
+            ])
+            chain = chat_prompt | llm
             response = chain.invoke({"input": input})
             return response.content
-        retrieval_chain=create_retrieval_chain(sqretriever,document_chain)
-        response=retrieval_chain.invoke({"input":input})
+        retrieval_chain = create_retrieval_chain(st.session_state.sqretriever, document_chain)
+        response = retrieval_chain.invoke({"input": input})
         return response['answer']
     except Exception as e:
         st.error(f"Failed to generate answer. Reason: {e}")
         return "An error occurred while generating the answer."
-    
 
 
 def main():
