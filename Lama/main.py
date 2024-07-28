@@ -19,6 +19,10 @@ import pickle
 import pathlib as Path
 import streamlit_authenticator as stauth
 
+import pysqlite3
+import sys
+sys.modules['sqlite3'] = pysqlite3
+
 # os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
 # os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
 # groq_api_key = os.getenv('GROQ_API_KEY')
