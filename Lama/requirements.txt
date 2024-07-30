@@ -12,7 +12,7 @@ langchain_chroma
 bs4
 lark
 lark-parser
-streamlit-authenticator
+streamlit-authenticator==0.1.5
 streamlit==1.28.1
 chromadb==0.4.17
 pysqlite3-binary
