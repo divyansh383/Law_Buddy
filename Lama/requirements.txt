@@ -15,4 +15,4 @@ lark-parser
 streamlit-authenticator==0.1.5
 streamlit==1.28.1
 chromadb==0.4.17
-pysqlite3
+pysqlite3-binary
