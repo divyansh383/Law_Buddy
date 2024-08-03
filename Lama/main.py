@@ -6,9 +6,6 @@ from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq
 from docs import load_documents
 import streamlit as st
-# __import__('pysqlite3')
-# import sys
-# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_chroma import Chroma
 from langchain.chains.query_constructor.base import AttributeInfo
 from langchain.retrievers.self_query.base import SelfQueryRetriever
@@ -21,16 +18,11 @@ from admin_panel import admin_panel
 import pickle
 import pathlib as Path
 import streamlit_authenticator as stauth
-
-
-
+from dotenv import load_dotenv
+load_dotenv()
 os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
 os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
 groq_api_key = os.getenv('GROQ_API_KEY')
-
-# os.environ["AZURE_OPENAI_API_KEY"] = st.secrets["AZURE_OPENAI_API_KEY"]
-# os.environ["AZURE_OPENAI_ENDPOINT"] = st.secrets["AZURE_OPENAI_ENDPOINT"]
-# groq_api_key = st.secrets['GROQ_API_KEY']
 
 # Initialization function to be called once
 def init():
