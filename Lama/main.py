@@ -63,7 +63,7 @@ def init():
 
     st.session_state.document_content_description = "List of Indian laws applicable on sexual offences , theft and extortion"
     
-    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma-7b-it", temperature=0)
+    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma2-9b-it", temperature=0)
     
     st.session_state.vectorstore = Chroma.from_documents(st.session_state.documents, st.session_state.embeddings)
 
