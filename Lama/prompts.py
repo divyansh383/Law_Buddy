@@ -40,7 +40,7 @@ Client Question: ({input})
 
 ###OUTPUT RULES###
 1) be specific with the laws  
-2) provide the most accurate law that is applicable in India
+2) provide the most accurate law in India based on the query
 3) keep the responses shorter and to the point , use smaller points 
 
 ###IMPORTANT###
