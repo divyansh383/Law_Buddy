@@ -1,6 +1,7 @@
 import os
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq
@@ -18,19 +19,30 @@ from admin_panel import admin_panel
 import pickle
 import pathlib as Path
 import streamlit_authenticator as stauth
-
+from dotenv import load_dotenv
+load_dotenv()
 os.environ["AZURE_OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
 os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
 groq_api_key = os.getenv('GROQ_API_KEY')
 
+# List of available models
+available_models = {
+    "Llama 3.1": "llama-3.1-8b-instant",
+    "Gemma 2": "gemma2-9b-it",
+    "Gemma": "gemma-7b-it",
+    "Mixtral": "mixtral-8x7b-32768"
+}
+
 # Initialization function to be called once
 def init():
     st.session_state.documents = load_documents()
-    
+    st.session_state.model_name = "llama-3.1-8b-instant"
     st.session_state.embeddings = AzureOpenAIEmbeddings(
         azure_deployment="lala",
         openai_api_version="2024-03-01-preview",
     )
+    
+    # st.session_state.embeddings=OllamaEmbeddings()
 
     st.session_state.metadata_field_info = [
         AttributeInfo(
@@ -52,7 +64,7 @@ def init():
 
     st.session_state.document_content_description = "List of Indian laws applicable on sexual offences , theft and extortion"
     
-    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma2-9b-it", temperature=0)
+    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name=st.session_state.model_name, temperature=0)
     
     st.session_state.vectorstore = Chroma.from_documents(st.session_state.documents, st.session_state.embeddings)
 
@@ -67,34 +79,6 @@ def init():
 
 if 'initialized' not in st.session_state:
     init()
-
-classifier_prompt = f"""
-<|TASK>|
-Your task is to classify user input question in one of the following as-:
-1) case
-2) law_query
-3) normal_query
-
-|<Important>|
-1) case -: 
-- When the user describes a situation 
-- asks for legal help
-- asks for legal help that is case specific 
-
-2) law_query -: 
-- asks about law related questions
-- or any follow up question
-- asks about laws
-
-3) normal_query-: 
-- when the user talks normally
-- asks about you
-- or a normal conversation
-
-<|INSTRUCTIONS>|
-1) Output should have only one of them-: case or law_query or normal_query
-
-"""
 
 class Classifier(BaseModel):
     type: str = Field(description="Type of Question Whether case/law_query/normal_query")
@@ -111,10 +95,9 @@ def question_classifier(question):
     response = chain.invoke({"question": question})
     return response['category']
 
-
 def answer(input):
     try:
-        llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama-3.1-8b-instant", temperature=0)
+        llm = ChatGroq(groq_api_key=groq_api_key, model_name=st.session_state.model_name, temperature=0)
 
         response = question_classifier(input)
         print(response)
@@ -137,8 +120,16 @@ def answer(input):
         st.error(f"Failed to generate answer. Reason: {e}")
         return "An error occurred while generating the answer."
 
-
 def main():
+    # Model selection
+    if "model_name" not in st.session_state:
+        st.title("Select Model")
+        selected_model = st.selectbox("Choose a model:", options=list(available_models.keys()))
+        st.session_state.model_name = available_models[selected_model]
+        init()  # Reinitialize with the selected model
+        st.experimental_rerun()
+        return
+
     # Page navigation
     if "page" not in st.session_state:
         st.session_state.page = "main"
@@ -151,6 +142,7 @@ def main():
         if st.sidebar.button("Back"):
             st.session_state.page = "main"
             st.rerun()
+            init()
     elif st.session_state.page == "login":
         login()
     else:
@@ -203,7 +195,6 @@ def login():
         st.session_state.authentication_status = True
         st.session_state.page = "admin"
         st.rerun()
-
 
 if __name__ == "__main__":
     main()
