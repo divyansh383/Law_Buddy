@@ -1,5 +1,5 @@
 import streamlit as st
-from docs import documents, save_documents
+from docs import load_documents,save_documents
 from langchain_core.documents import Document
 
 # Define the admin panel function
@@ -21,6 +21,7 @@ def admin_panel():
                 st.rerun()
 
 def add_document(page_content, law_name, content_description, category):
+    documents=load_documents()
     new_doc = Document(
         page_content=page_content,
         metadata={
@@ -31,5 +32,5 @@ def add_document(page_content, law_name, content_description, category):
     )
     documents.append(new_doc)
     save_documents(documents)  
-    
-    # st.write("Current documents list:", documents)  # Display updated list for debugging
+    st.success("Document added successfully!")
+  

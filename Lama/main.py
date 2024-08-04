@@ -1,7 +1,9 @@
 import os
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq

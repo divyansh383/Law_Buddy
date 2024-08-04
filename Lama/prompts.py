@@ -80,3 +80,30 @@ case_prompt = ChatPromptTemplate.from_template("""
     3. User specific Case Study
 """)
 
+classifier_prompt = f"""
+<|TASK>|
+Your task is to classify user input question in one of the following as-:
+1) case
+2) law_query
+3) normal_query
+
+|<Important>|
+1) case -: 
+- When the user describes a situation 
+- asks for legal help
+- asks for legal help that is case specific 
+
+2) law_query -: 
+- asks about law related questions
+- or any follow up question
+- asks about laws
+
+3) normal_query-: 
+- when the user talks normally
+- asks about you
+- or a normal conversation
+
+<|INSTRUCTIONS>|
+1) Output should have only one of them-: case or law_query or normal_query
+
+"""
