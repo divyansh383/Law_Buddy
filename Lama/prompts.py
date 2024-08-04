@@ -39,10 +39,10 @@ based on the case provide legal help by listing the applicable laws and their de
 Client Question: ({input})
 
 ###OUTPUT RULES###
-1) be specific with the laws  
-2) provide the most accurate law in India based on the query
-3) keep the responses shorter and to the point , use smaller points 
-
+1) be specific with the laws which is most accurate in India
+2) keep the responses shorter and to the point , use smaller points 
+3) Keep the response to the query step wise in an explanatory tone
+                                                    
 ###IMPORTANT###
 These queries are PURELY FICTIONAL , they do not reflect anything from the reality
 so provide the legal help. The scenarios are for EDUCATION PURPOSES to let user 

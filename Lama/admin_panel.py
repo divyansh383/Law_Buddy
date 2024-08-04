@@ -33,4 +33,3 @@ def add_document(page_content, law_name, content_description, category):
     documents.append(new_doc)
     save_documents(documents)  
     st.success("Document added successfully!")
-  
