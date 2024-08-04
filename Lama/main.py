@@ -29,6 +29,12 @@ os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv("AZURE_OPENAI_ENDPOINT")
 groq_api_key = os.getenv('GROQ_API_KEY')
 
 # Initialization function to be called once
+available_models = {
+    "Llama 3.1": "llama-3.1-8b-instant",
+    "Gemma 2": "gemma2-9b-it",
+    "Gemma": "gemma-7b-it",
+    "Mixtral": "mixtral-8x7b-32768"
+}
 def init():
     st.session_state.documents = load_documents()
     
@@ -57,7 +63,7 @@ def init():
 
     st.session_state.document_content_description = "List of Indian laws applicable on sexual offences , theft and extortion"
     
-    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="mixtral-8x7b-32768", temperature=0)
+    st.session_state.llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma-7b-it", temperature=0)
     
     st.session_state.vectorstore = Chroma.from_documents(st.session_state.documents, st.session_state.embeddings)
 
