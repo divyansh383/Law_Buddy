@@ -20,8 +20,8 @@ def admin_panel():
                 st.success("Data added successfully!")
                 st.rerun()
 
+
 def add_document(page_content, law_name, content_description, category):
-    documents=load_documents()
     new_doc = Document(
         page_content=page_content,
         metadata={
@@ -30,6 +30,5 @@ def add_document(page_content, law_name, content_description, category):
             "category": category
         }
     )
-    documents.append(new_doc)
-    save_documents(documents)  
+    save_documents(new_doc)  
     st.success("Document added successfully!")
