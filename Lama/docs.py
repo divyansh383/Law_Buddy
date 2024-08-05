@@ -2,21 +2,22 @@ import json
 import os
 from langchain_core.documents import Document
 
-# Mongo DB setup
+# MongoDB setup
 from dotenv import load_dotenv
 load_dotenv()
 from pymongo import MongoClient
-MONGO_URI=os.getenv('MONGO_URI')
-client=MongoClient(MONGO_URI)
-db=client['legal-buddy-documents']
-collection=db['legal-buddy-collection']
+
+MONGO_URI = os.getenv('MONGO_URI')
+client = MongoClient(MONGO_URI)
+db = client['legal-buddy-documents']
+collection = db['legal-buddy-collection']
 
 def load_documents():
     """Load documents from MongoDB."""
     documents = collection.find()
     return [Document(page_content=doc['page_content'], metadata=doc['metadata']) for doc in documents]
 
-def save_documents(document):
+def save_document(document):
     """Insert a single document to MongoDB."""
     doc_to_insert = {
         'page_content': document.page_content,
@@ -26,15 +27,56 @@ def save_documents(document):
     # Insert the document
     collection.insert_one(doc_to_insert)
 
-
-## Sample Usage
-
-if __name__ == "__main__":
-    # Print existing documents
-    # print("Loading documents...")
-    # documents = load_documents()
-    # for doc in documents:
-    #     print(f"Page Content: {doc.page_content}")
-    #     print(f"Metadata: {doc.metadata}")
-    #     print("-" * 40)
+def save_documents_to_json(documents, json_file_path):
+    """Save documents to a JSON file."""
+    docs_to_save = [{
+        'page_content': doc.page_content,
+        'metadata': doc.metadata
+    } for doc in documents]
     
+    with open(json_file_path, 'w') as json_file:
+        json.dump(docs_to_save, json_file, indent=4)
+
+# Sample Usage
+if __name__ == "__main__":
+    # Load documents
+    print("Loading documents...")
+    documents = load_documents()
+    
+    # Save documents to fetch.json
+    json_file_path = 'fetch.json'
+    save_documents_to_json(documents, json_file_path)
+    print(f"Documents saved to {json_file_path}")
+    
+    # Print loaded documents
+    for doc in documents:
+        print(f"Page Content: {doc.page_content}")
+        print(f"Metadata: {doc.metadata}")
+        print("-" * 40)
+    
+    # Add a new document
+    new_doc = Document(
+        page_content="Sample page content for the new document",
+        metadata={
+            "law": "Sample Law",
+            "content": "Sample content description for the law - Sample Law",
+            "category": "Sample Category"
+        }
+    )
+    
+    save_document(new_doc)
+    print("New document added successfully!")
+    
+    # Load documents after insertion to verify
+    print("Loading documents after adding new one...")
+    documents = load_documents()
+    
+    # Save updated documents to fetch.json
+    save_documents_to_json(documents, json_file_path)
+    print(f"Updated documents saved to {json_file_path}")
+    
+    # Print loaded documents
+    for doc in documents:
+        print(f"Page Content: {doc.page_content}")
+        print(f"Metadata: {doc.metadata}")
+        print("-" * 40)
