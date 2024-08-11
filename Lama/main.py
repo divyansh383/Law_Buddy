@@ -99,7 +99,7 @@ def question_classifier(question):
 
 def answer(input):
     try:
-        llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama-3.1-8b-instant", temperature=0)
+        llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma2-9b-it", temperature=0)
 
         response = question_classifier(input)
         print(response)

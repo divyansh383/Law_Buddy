@@ -27,6 +27,31 @@ def save_document(document):
     # Insert the document
     collection.insert_one(doc_to_insert)
 
+def save_documents(documents):
+    """Insert multiple documents into MongoDB."""
+    if not documents:
+        print("No documents to insert.")
+        return
+    
+    # Ensure each document is in the form of a dictionary
+    docs_to_insert = []
+    for doc in documents:
+        if isinstance(doc, dict):
+            docs_to_insert.append({
+                'page_content': doc.get('page_content'),
+                'metadata': doc.get('metadata')
+            })
+        else:
+            print(f"Skipping invalid document: {doc}")
+
+    # Insert all documents at once
+    if docs_to_insert:
+        collection.insert_many(docs_to_insert)
+        print(f"{len(docs_to_insert)} documents inserted successfully!")
+    else:
+        print("No valid documents to insert.")
+
+
 def save_documents_to_json(documents, json_file_path):
     """Save documents to a JSON file."""
     docs_to_save = [{
