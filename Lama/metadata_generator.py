@@ -55,8 +55,15 @@ def format_paragraphs_to_metadata(paragraphs, pdf_name):
 
     for i, paragraph in enumerate(paragraphs):
         # Get metadata from the meta_data_formation function
-        metadata = meta_data_formation(paragraph, pdf_name)
-        
+        tries=3
+        metadata={"law":"","content":"","category":""}
+        while(tries>0):
+            try:
+                metadata = meta_data_formation(paragraph, pdf_name)
+                break
+            except Exception as e:
+                print("Error occured in generating metadata , llm hallucinated , error: ",e)
+                tries-=1
         # Format the metadata into the desired JSON structure
         formatted_json = {
             "page_content": paragraph,
