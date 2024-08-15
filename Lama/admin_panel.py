@@ -51,13 +51,12 @@ def admin_panel():
                             st.error(f"Failed to extract metadata from PDF. Error: {e}")
 
                         # Save documents to MongoDB
-                        confirm_button=st.button("Save data to database")
-                        if(confirm_button):
-                            try:
-                                save_documents(document_list)
-                                st.success(f"{pdf_name} uploaded and processed successfully!")
-                            except Exception as e:
-                                st.error(f"Failed to upload data to the database. Error: {e}")
+                        try:
+                            save_documents(document_list)
+                            st.success(f"{pdf_name} uploaded and processed successfully!")
+                        except Exception as e:
+                            st.error(f"Failed to upload data to the database. Error: {e}")
+                            
                         # displaying documents
                         for i, doc in enumerate(document_list):
                             st.write(f"**Document {i + 1} Content:** {doc.get('page_content', 'No content available')}")
@@ -66,7 +65,6 @@ def admin_panel():
                         # clean up
                         try:
                             os.remove(pdf_path)
-                            st.success(f"{pdf_name} deleted successfully!")
                         except Exception as e:
                             st.error(f"Failed to delete the PDF file. Error: {e}")
 
